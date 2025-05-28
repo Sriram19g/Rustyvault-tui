@@ -4,7 +4,8 @@ pub enum CurrentScreen {
     Show,
     Add,
     Update,
-    Delete,
+    Filter,
+    Confirm,
     Exit,
 }
 
@@ -82,6 +83,19 @@ impl App {
                 Creds::Gmail => self.current_param = Some(Creds::Username),
                 Creds::Username => self.current_param = Some(Creds::Password),
                 Creds::Password => self.current_param = Some(Creds::Sitename),
+            };
+        } else {
+            self.current_param = Some(Creds::Sitename);
+        }
+    }
+    pub fn toggle_filter_param(&mut self) {
+        if let Some(current_param) = &self.current_param {
+            match current_param {
+                Creds::Sitename => self.current_param = Some(Creds::Siteurl),
+                Creds::Siteurl => self.current_param = Some(Creds::Gmail),
+                Creds::Gmail => self.current_param = Some(Creds::Username),
+                Creds::Username => self.current_param = Some(Creds::Sitename),
+                _ => {}
             };
         } else {
             self.current_param = Some(Creds::Sitename);

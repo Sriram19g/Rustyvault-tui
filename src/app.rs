@@ -67,6 +67,9 @@ impl App {
         self.user_input = String::new();
         self.gmail_input = String::new();
     }
+    pub fn filter_operation() {
+        todo!()
+    }
     pub fn check_password(&mut self) {
         let pass = String::from("abcd1234");
         if pass.trim() == self.entry_key.trim() {

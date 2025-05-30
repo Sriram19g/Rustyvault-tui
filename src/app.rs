@@ -1,3 +1,5 @@
+mod keyevents;
+
 pub enum CurrentScreen {
     Login,
     Main,

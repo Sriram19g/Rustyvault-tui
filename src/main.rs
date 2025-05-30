@@ -1,4 +1,4 @@
-use std::{collections::btree_map::VacantEntry, error::Error, io};
+use std::{error::Error, io};
 
 use app::{App, Creds, CurrentScreen};
 use ratatui::{
@@ -42,184 +42,20 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 continue;
             }
             match app.current_screen {
-                CurrentScreen::Main => match key.code {
-                    KeyCode::Char('a') => {
-                        app.current_screen = CurrentScreen::Add;
-                        app.current_param = Some(Creds::Sitename);
-                    }
-                    KeyCode::Char('f') => {
-                        app.current_screen = CurrentScreen::Filter;
-                        app.current_param = Some(Creds::Sitename);
-                    }
-                    KeyCode::Char('s') => {
-                        app.current_screen = CurrentScreen::Show;
-                    }
-                    KeyCode::Char('q') => {
-                        app.current_screen = CurrentScreen::Exit;
-                    }
-                    _ => {}
-                },
-                CurrentScreen::Add | CurrentScreen::Update if key.kind == KeyEventKind::Press => {
-                    match key.code {
-                        KeyCode::Enter => {
-                            if let Some(adding) = &app.current_param {
-                                match adding {
-                                    Creds::Sitename => {
-                                        app.current_param = Some(Creds::Siteurl);
-                                    }
-                                    Creds::Siteurl => {
-                                        app.current_param = Some(Creds::Gmail);
-                                    }
-                                    Creds::Gmail => {
-                                        app.current_param = Some(Creds::Username);
-                                    }
-                                    Creds::Username => {
-                                        app.current_param = Some(Creds::Password);
-                                    }
-                                    Creds::Password => {
-                                        app.save_credentials();
-                                        app.current_screen = CurrentScreen::Main;
-                                    }
-                                }
-                            }
-                        }
-                        KeyCode::Backspace => {
-                            if let Some(adding) = &app.current_param {
-                                match adding {
-                                    Creds::Sitename => {
-                                        app.site_input.pop();
-                                    }
-                                    Creds::Siteurl => {
-                                        app.url_input.pop();
-                                    }
-                                    Creds::Gmail => {
-                                        app.gmail_input.pop();
-                                    }
-                                    Creds::Username => {
-                                        app.user_input.pop();
-                                    }
-                                    Creds::Password => {
-                                        app.pass_input.pop();
-                                    }
-                                }
-                            }
-                        }
-                        KeyCode::Esc => {
-                            app.current_screen = CurrentScreen::Main;
-                            app.current_param = None;
-                        }
-                        KeyCode::Tab => {
-                            app.toggle_params();
-                        }
-                        KeyCode::Char(value) => {
-                            if let Some(adding) = &app.current_param {
-                                match adding {
-                                    Creds::Sitename => {
-                                        app.site_input.push(value);
-                                    }
-                                    Creds::Siteurl => {
-                                        app.url_input.push(value);
-                                    }
-                                    Creds::Gmail => {
-                                        app.gmail_input.push(value);
-                                    }
-                                    Creds::Username => {
-                                        app.user_input.push(value);
-                                    }
-                                    Creds::Password => {
-                                        app.pass_input.push(value);
-                                    }
-                                }
-                            }
-                        }
-                        _ => {}
+                CurrentScreen::Main => app.main_key_handler(key),
+                CurrentScreen::Add if key.kind == KeyEventKind::Press => app.add_key_handler(key),
+                CurrentScreen::Update if key.kind == KeyEventKind::Press => {
+                    app.update_key_handler(key)
+                }
+                CurrentScreen::Login if key.kind == KeyEventKind::Press => {
+                    if !app.login_key_handler(key) {
+                        return Ok(false);
                     }
                 }
-                CurrentScreen::Login if key.kind == KeyEventKind::Press => match key.code {
-                    KeyCode::Enter => {
-                        app.check_password();
-                        if app.is_login {
-                            app.current_screen = CurrentScreen::Main;
-                        } else {
-                            return Ok(false);
-                        }
-                    }
-                    KeyCode::BackTab => {
-                        app.entry_key.pop();
-                    }
-                    KeyCode::Char(value) => {
-                        app.entry_key.push('*');
-                    }
-                    _ => {}
-                },
-                CurrentScreen::Filter if key.kind == KeyEventKind::Press => match key.code {
-                    KeyCode::Enter => {
-                        if let Some(filter_param) = &app.current_param {
-                            match filter_param {
-                                Creds::Sitename => {
-                                    app.current_param = Some(Creds::Siteurl);
-                                }
-                                Creds::Siteurl => {
-                                    app.current_param = Some(Creds::Gmail);
-                                }
-                                Creds::Gmail => {
-                                    app.current_param = Some(Creds::Username);
-                                }
-                                Creds::Username => {
-                                    app.save_credentials();
-                                    app.current_screen = CurrentScreen::Main;
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    KeyCode::Backspace => {
-                        if let Some(filter_param) = &app.current_param {
-                            match filter_param {
-                                Creds::Sitename => {
-                                    app.site_input.pop();
-                                }
-                                Creds::Siteurl => {
-                                    app.url_input.pop();
-                                }
-                                Creds::Gmail => {
-                                    app.gmail_input.pop();
-                                }
-                                Creds::Username => {
-                                    app.user_input.pop();
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    KeyCode::Tab => {
-                        app.toggle_filter_param();
-                    }
-                    KeyCode::Esc => {
-                        app.current_screen = CurrentScreen::Main;
-                        app.current_param = None;
-                    }
-                    KeyCode::Char(value) => {
-                        if let Some(adding) = &app.current_param {
-                            match adding {
-                                Creds::Sitename => {
-                                    app.site_input.push(value);
-                                }
-                                Creds::Siteurl => {
-                                    app.url_input.push(value);
-                                }
-                                Creds::Gmail => {
-                                    app.gmail_input.push(value);
-                                }
-                                Creds::Username => {
-                                    app.user_input.push(value);
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    _ => {}
-                },
+                CurrentScreen::Filter if key.kind == KeyEventKind::Press => {
+                    app.filter_key_handler(key)
+                }
+                CurrentScreen::Show => app.show_key_handler(key),
             }
         }
     }

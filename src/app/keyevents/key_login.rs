@@ -12,11 +12,13 @@ impl super::super::App {
                     return false;
                 }
             }
-            KeyCode::BackTab => {
+            KeyCode::Backspace => {
                 self.entry_key.pop();
+                self.masked_pass.pop();
             }
             KeyCode::Char(value) => {
-                self.entry_key.push('*');
+                self.entry_key.push(value);
+                self.masked_pass.push('*');
             }
             _ => {}
         }

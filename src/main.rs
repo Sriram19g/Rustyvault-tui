@@ -1,10 +1,10 @@
 use std::{error::Error, io};
 
-use app::{App, Creds, CurrentScreen};
+use app::{App, CurrentScreen};
 use ratatui::{
     Terminal,
     crossterm::{
-        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
+        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyEventKind},
         execute,
         terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
     },
@@ -12,6 +12,7 @@ use ratatui::{
 };
 
 mod app;
+mod tui;
 
 fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
@@ -35,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<bool> {
     loop {
-        terminal.draw(|f| ui(f, app))?;
+        terminal.draw(|f| tui::ui(f, app))?;
 
         if let Event::Key(key) = event::read()? {
             if key.kind == event::KeyEventKind::Release {
@@ -56,6 +57,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     app.filter_key_handler(key)
                 }
                 CurrentScreen::Show => app.show_key_handler(key),
+                CurrentScreen::Confirm => {}
+                CurrentScreen::Exit => {}
+                _ => {}
             }
         }
     }

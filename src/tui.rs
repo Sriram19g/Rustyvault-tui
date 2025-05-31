@@ -1,3 +1,4 @@
+use add_tui::add_page;
 use footer::footer_layout;
 use header::header_layout;
 use login_popup::login_pop_up;
@@ -8,6 +9,7 @@ use ratatui::{
 };
 
 use crate::app::{App, CurrentScreen};
+mod add_tui;
 mod footer;
 mod header;
 mod login_popup;
@@ -32,5 +34,8 @@ pub fn ui(frame: &mut Frame, app: &App) {
 
     if let CurrentScreen::Main = app.current_screen {
         main_pg(frame, chunks[1]);
+    }
+    if let CurrentScreen::Add = app.current_screen {
+        add_page(frame, chunks[1], app);
     }
 }

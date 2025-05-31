@@ -4,6 +4,7 @@ use super::super::{Creds, CurrentScreen};
 
 impl super::super::App {
     pub fn main_key_handler(&mut self, key: KeyEvent) {
+        self.clear_input();
         match key.code {
             KeyCode::Char('a') => {
                 self.current_screen = CurrentScreen::Add;
@@ -21,5 +22,14 @@ impl super::super::App {
             }
             _ => {}
         }
+    }
+    fn clear_input(&mut self) {
+        self.entry_key = String::new();
+        self.site_input = String::new();
+        self.url_input = String::new();
+        self.gmail_input = String::new();
+        self.user_input = String::new();
+        self.pass_input = String::new();
+        self.masked_pass = String::new();
     }
 }

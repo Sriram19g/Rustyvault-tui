@@ -44,6 +44,7 @@ impl super::super::App {
                         }
                         Creds::Password => {
                             self.pass_input.pop();
+                            self.masked_pass.pop();
                         }
                     }
                 }
@@ -72,6 +73,7 @@ impl super::super::App {
                         }
                         Creds::Password => {
                             self.pass_input.push(value);
+                            self.masked_pass.push('*');
                         }
                     }
                 }

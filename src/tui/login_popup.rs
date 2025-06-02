@@ -48,7 +48,7 @@ fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Percentage((100 - percent_y) / 2),
-            Constraint::Percentage((percent_y)),
+            Constraint::Percentage(percent_y),
             Constraint::Percentage((100 - percent_y) / 2),
         ])
         .split(area);

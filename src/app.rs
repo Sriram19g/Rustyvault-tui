@@ -1,4 +1,9 @@
+use ratatui::widgets::{ScrollbarState, TableState};
+
 mod keyevents;
+mod showtable;
+
+const ITEM_HEIGHT: usize = 10;
 
 pub enum CurrentScreen {
     Login,
@@ -27,7 +32,35 @@ pub struct Credential {
     pub gmail: String,
 }
 
+impl Credential {
+    pub const fn ref_array(&self) -> [&String; 5] {
+        [
+            &self.site_name,
+            &self.url,
+            &self.gmail,
+            &self.username,
+            &self.password,
+        ]
+    }
+    pub fn site_name(&self) -> &str {
+        &self.site_name
+    }
+    pub fn url(&self) -> &str {
+        &self.url
+    }
+    pub fn gmail(&self) -> &str {
+        &self.password
+    }
+    pub fn username(&self) -> &str {
+        &self.username
+    }
+    pub fn password(&self) -> &str {
+        &self.password
+    }
+}
+
 pub struct App {
+    pub state: TableState,
     pub entry_key: String,
     pub site_input: String,
     pub url_input: String,
@@ -39,11 +72,13 @@ pub struct App {
     pub current_screen: CurrentScreen,
     pub current_param: Option<Creds>,
     pub credentials: Vec<Credential>,
+    pub scroll_state: ScrollbarState,
 }
 
 impl App {
     pub fn new() -> App {
         App {
+            state: TableState::default().with_selected(0),
             entry_key: String::new(),
             site_input: String::new(),
             url_input: String::new(),
@@ -55,6 +90,7 @@ impl App {
             current_screen: CurrentScreen::Login,
             current_param: None,
             credentials: Vec::new(),
+            scroll_state: ScrollbarState::new(0),
         }
     }
     pub fn save_credentials(&mut self) {

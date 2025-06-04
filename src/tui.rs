@@ -9,13 +9,17 @@ use ratatui::{
 };
 use show_tui::show_page;
 
-use crate::app::{App, CurrentScreen};
+use crate::{
+    app::{App, CurrentScreen},
+    tui::update_tui::update_page,
+};
 mod add_tui;
 mod footer;
 mod header;
 mod login_popup;
 mod main_page;
 mod show_tui;
+mod update_tui;
 
 pub fn ui(frame: &mut Frame, app: &mut App) {
     if let CurrentScreen::Login = app.current_screen {
@@ -42,5 +46,8 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     }
     if let CurrentScreen::Show = app.current_screen {
         show_page(frame, chunks[1], app);
+    }
+    if let CurrentScreen::Update = app.current_screen {
+        update_page(frame, chunks[1], app);
     }
 }

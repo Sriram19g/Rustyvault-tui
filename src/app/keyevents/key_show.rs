@@ -1,6 +1,6 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
-use crate::app::CurrentScreen;
+use crate::app::{Creds, CurrentScreen};
 
 impl super::super::App {
     pub fn show_key_handler(&mut self, key: KeyEvent) {
@@ -10,7 +10,11 @@ impl super::super::App {
             KeyCode::Char('k') | KeyCode::Up => self.previous_row(),
             KeyCode::Char('c') => {}
             KeyCode::Char('d') => self.delete_entry(),
-            KeyCode::Char('u') => {}
+            KeyCode::Char('u') => {
+                self.current_param = Some(Creds::Sitename);
+                self.load_values();
+                self.current_screen = CurrentScreen::Update;
+            }
             _ => {}
         }
     }

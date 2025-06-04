@@ -6,8 +6,8 @@ impl super::super::App {
     pub fn update_key_handler(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Enter => {
-                if let Some(adding) = &self.current_param {
-                    match adding {
+                if let Some(updating) = &self.current_param {
+                    match updating {
                         Creds::Sitename => {
                             self.current_param = Some(Creds::Siteurl);
                         }
@@ -21,15 +21,15 @@ impl super::super::App {
                             self.current_param = Some(Creds::Password);
                         }
                         Creds::Password => {
-                            self.save_credentials();
-                            self.current_screen = CurrentScreen::Main;
+                            self.update_credentials();
+                            self.current_screen = CurrentScreen::Show;
                         }
                     }
                 }
             }
             KeyCode::Backspace => {
-                if let Some(adding) = &self.current_param {
-                    match adding {
+                if let Some(updating) = &self.current_param {
+                    match updating {
                         Creds::Sitename => {
                             self.site_input.pop();
                         }
@@ -43,13 +43,14 @@ impl super::super::App {
                             self.user_input.pop();
                         }
                         Creds::Password => {
+                            self.masked_pass.pop();
                             self.pass_input.pop();
                         }
                     }
                 }
             }
             KeyCode::Esc => {
-                self.current_screen = CurrentScreen::Main;
+                self.current_screen = CurrentScreen::Show;
                 self.current_param = None;
             }
             KeyCode::Tab => {
@@ -71,6 +72,7 @@ impl super::super::App {
                             self.user_input.push(value);
                         }
                         Creds::Password => {
+                            self.masked_pass.push('*');
                             self.pass_input.push(value);
                         }
                     }

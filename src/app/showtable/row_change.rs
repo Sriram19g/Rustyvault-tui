@@ -49,4 +49,14 @@ impl super::super::App {
             }
         }
     }
+    pub fn load_values(&mut self) {
+        if let Some(index) = self.state.selected() {
+            self.site_input = self.credentials[index].site_name.clone();
+            self.url_input = self.credentials[index].url.clone();
+            self.gmail_input = self.credentials[index].gmail.clone();
+            self.user_input = self.credentials[index].username.clone();
+            self.pass_input = self.credentials[index].password.clone();
+            self.masked_pass = "*".repeat(self.credentials[index].password.len());
+        }
+    }
 }

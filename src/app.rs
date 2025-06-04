@@ -107,6 +107,23 @@ impl App {
         self.user_input = String::new();
         self.gmail_input = String::new();
     }
+
+    pub fn update_credentials(&mut self) {
+        if let Some(index) = self.state.selected() {
+            self.credentials[index].site_name = self.site_input.clone();
+            self.credentials[index].url = self.url_input.clone();
+            self.credentials[index].gmail = self.gmail_input.clone();
+            self.credentials[index].username = self.url_input.clone();
+            self.credentials[index].password = self.pass_input.clone();
+
+            self.site_input = String::new();
+            self.url_input = String::new();
+            self.pass_input = String::new();
+            self.user_input = String::new();
+            self.gmail_input = String::new();
+        }
+    }
+
     pub fn filter_operation() {
         todo!()
     }

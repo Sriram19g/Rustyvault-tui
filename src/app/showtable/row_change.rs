@@ -33,7 +33,7 @@ impl super::super::App {
 
     pub fn delete_entry(&mut self) {
         if let Some(index) = self.state.selected() {
-            if (index < self.credentials.len()) {
+            if index < self.credentials.len() {
                 self.credentials.remove(index);
 
                 let new_selected = if index == self.credentials.len() {

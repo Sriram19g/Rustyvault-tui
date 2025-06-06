@@ -11,6 +11,8 @@ use ratatui::{
     prelude::{Backend, CrosstermBackend},
 };
 
+use crate::app::Popup;
+
 mod app;
 mod tui;
 
@@ -45,9 +47,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             match app.current_screen {
                 CurrentScreen::Main => app.main_key_handler(key),
                 CurrentScreen::Add if key.kind == KeyEventKind::Press => app.add_key_handler(key),
-                CurrentScreen::Update if key.kind == KeyEventKind::Press => {
-                    app.update_key_handler(key)
-                }
                 CurrentScreen::Login if key.kind == KeyEventKind::Press => {
                     if !app.login_key_handler(key) {
                         return Ok(false);
@@ -56,13 +55,16 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 CurrentScreen::Filter if key.kind == KeyEventKind::Press => {
                     app.filter_key_handler(key)
                 }
-                CurrentScreen::Show => app.show_key_handler(key),
+                CurrentScreen::Show => {
+                    match app.current_popup {
+                        Popup::None => app.show_key_handler(key),
+                        Popup::Update => app.update_key_handler(key),
+                    };
+                }
                 CurrentScreen::Confirm => {}
                 CurrentScreen::Exit => {}
                 _ => {}
             }
         }
     }
-
-    Ok(true)
 }

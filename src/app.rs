@@ -10,10 +10,14 @@ pub enum CurrentScreen {
     Main,
     Show,
     Add,
-    Update,
     Filter,
     Confirm,
     Exit,
+}
+
+pub enum Popup {
+    None,
+    Update,
 }
 
 pub enum Creds {
@@ -73,6 +77,7 @@ pub struct App {
     pub current_param: Option<Creds>,
     pub credentials: Vec<Credential>,
     pub scroll_state: ScrollbarState,
+    pub current_popup: Popup,
 }
 
 impl App {
@@ -88,6 +93,7 @@ impl App {
             masked_pass: String::new(),
             is_login: false,
             current_screen: CurrentScreen::Login,
+            current_popup: Popup::None,
             current_param: None,
             credentials: Vec::new(),
             scroll_state: ScrollbarState::new(0),
@@ -106,6 +112,7 @@ impl App {
         self.pass_input = String::new();
         self.user_input = String::new();
         self.gmail_input = String::new();
+        self.masked_pass = String::new();
     }
 
     pub fn update_credentials(&mut self) {
@@ -121,6 +128,7 @@ impl App {
             self.pass_input = String::new();
             self.user_input = String::new();
             self.gmail_input = String::new();
+            self.masked_pass = String::new();
         }
     }
 

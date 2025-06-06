@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
 };
 
-use crate::app::{App, CurrentScreen};
+use crate::app::{App, CurrentScreen, Popup};
 
 pub fn footer_layout(frame: &mut Frame, area: Rect, app: &App) {
     let footer_chunks = Layout::default()
@@ -18,12 +18,13 @@ pub fn footer_layout(frame: &mut Frame, area: Rect, app: &App) {
         match app.current_screen {
             CurrentScreen::Main => Span::styled("Main Screen", Style::default().fg(Color::Green)),
             CurrentScreen::Add => Span::styled("Add Screen", Style::default().fg(Color::White)),
-            CurrentScreen::Show => {
-                Span::styled("Display Screen", Style::default().fg(Color::Yellow))
-            }
-            CurrentScreen::Update => {
-                Span::styled("Update Screen", Style::default().fg(Color::Gray))
-            }
+            CurrentScreen::Show => match app.current_popup {
+                Popup::None => Span::styled("Display Screen", Style::default().fg(Color::Yellow)),
+                Popup::Update => Span::styled("Update Screen", Style::default().fg(Color::Gray)),
+            },
+            // CurrentScreen::Update => {
+            //     Span::styled("Update Screen", Style::default().fg(Color::Gray))
+            // }
             CurrentScreen::Exit => Span::styled("Exit Screen", Style::default().fg(Color::Cyan)),
             CurrentScreen::Filter => {
                 Span::styled("Filter Screen", Style::default().fg(Color::DarkGray))
@@ -48,14 +49,17 @@ pub fn footer_layout(frame: &mut Frame, area: Rect, app: &App) {
                 "(ESC) to cancel/(Tab) to switch boxes/enter to complete",
                 Style::default().fg(Color::Red),
             ),
-            CurrentScreen::Update => Span::styled(
-                "(q) to quit / (e) to make new pair",
-                Style::default().fg(Color::Red),
-            ),
-            CurrentScreen::Show => Span::styled(
-                "(q) to quit / (e) to make new pair",
-                Style::default().fg(Color::Red),
-            ),
+
+            CurrentScreen::Show => match app.current_popup {
+                Popup::None => Span::styled(
+                    "(q) to quit / (e) to make new pair",
+                    Style::default().fg(Color::Red),
+                ),
+                Popup::Update => Span::styled(
+                    "(q) to quit / (e) to make new pair",
+                    Style::default().fg(Color::Red),
+                ),
+            },
             CurrentScreen::Filter => Span::styled(
                 "(ESC) to cancel/(Tab) to switch boxes/enter to complete",
                 Style::default().fg(Color::Red),

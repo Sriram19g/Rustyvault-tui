@@ -10,7 +10,7 @@ use ratatui::{
 use show_tui::show_page;
 
 use crate::{
-    app::{App, CurrentScreen},
+    app::{App, CurrentScreen, Popup},
     tui::update_tui::update_page,
 };
 mod add_tui;
@@ -46,8 +46,8 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     }
     if let CurrentScreen::Show = app.current_screen {
         show_page(frame, chunks[1], app);
-    }
-    if let CurrentScreen::Update = app.current_screen {
-        update_page(frame, chunks[1], app);
+        if let Popup::Update = app.current_popup {
+            update_page(frame, chunks[1], app);
+        }
     }
 }

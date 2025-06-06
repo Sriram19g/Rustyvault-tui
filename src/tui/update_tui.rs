@@ -5,13 +5,21 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::Line,
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Clear, Paragraph},
 };
 
 use crate::app::{App, Creds};
 
 pub fn update_page(frame: &mut Frame, area: Rect, app: &App) {
     let block1 = get_area(area);
+    let popup_block = Block::default()
+        .borders(Borders::NONE)
+        .style(Style::default().bg(Color::DarkGray));
+
+    frame.render_widget(Clear, block1[0]);
+    frame.render_widget(Clear, block1[1]);
+    frame.render_widget(&popup_block, block1[0]);
+    frame.render_widget(&popup_block, block1[1]);
 
     header(frame, block1[0]);
     body(frame, block1[1], app);

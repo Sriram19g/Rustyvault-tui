@@ -1,5 +1,7 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
+use crate::app::Popup;
+
 use super::super::{Creds, CurrentScreen};
 
 impl super::super::App {
@@ -22,6 +24,7 @@ impl super::super::App {
                         }
                         Creds::Password => {
                             self.update_credentials();
+                            self.current_popup = Popup::None;
                             self.current_screen = CurrentScreen::Show;
                         }
                     }
@@ -52,6 +55,7 @@ impl super::super::App {
             KeyCode::Esc => {
                 self.current_screen = CurrentScreen::Show;
                 self.current_param = None;
+                self.current_popup = Popup::None;
             }
             KeyCode::Tab => {
                 self.toggle_params();

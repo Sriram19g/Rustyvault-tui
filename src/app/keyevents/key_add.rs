@@ -1,5 +1,7 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
+use crate::app::Popup;
+
 use super::super::{Creds, CurrentScreen};
 
 impl super::super::App {
@@ -21,8 +23,8 @@ impl super::super::App {
                             self.current_param = Some(Creds::Password);
                         }
                         Creds::Password => {
-                            self.save_credentials();
-                            self.current_screen = CurrentScreen::Main;
+                            self.prev_popup = self.current_popup;
+                            self.current_popup = Popup::Confirm;
                         }
                     }
                 }

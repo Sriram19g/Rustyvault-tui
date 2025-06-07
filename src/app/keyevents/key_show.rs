@@ -9,7 +9,10 @@ impl super::super::App {
             KeyCode::Char('j') | KeyCode::Down => self.next_row(),
             KeyCode::Char('k') | KeyCode::Up => self.previous_row(),
             KeyCode::Char('c') => {}
-            KeyCode::Char('d') => self.delete_entry(),
+            KeyCode::Char('d') => {
+                self.prev_popup = self.current_popup;
+                self.current_popup = Popup::Confirm;
+            }
             KeyCode::Char('u') => {
                 self.current_param = Some(Creds::Sitename);
                 self.load_values();

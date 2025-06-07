@@ -11,9 +11,10 @@ use show_tui::show_page;
 
 use crate::{
     app::{App, CurrentScreen, Popup},
-    tui::update_tui::update_page,
+    tui::{confirm_tui::confirm_popup, update_tui::update_page},
 };
 mod add_tui;
+mod confirm_tui;
 mod footer;
 mod header;
 mod login_popup;
@@ -40,14 +41,24 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
 
     if let CurrentScreen::Main = app.current_screen {
         main_pg(frame, chunks[1]);
+        if let Popup::Confirm = app.current_popup {
+            confirm_popup(frame, app);
+        }
     }
     if let CurrentScreen::Add = app.current_screen {
         add_page(frame, chunks[1], app);
+        if let Popup::Confirm = app.current_popup {
+            confirm_popup(frame, app);
+        }
     }
     if let CurrentScreen::Show = app.current_screen {
         show_page(frame, chunks[1], app);
-        if let Popup::Update = app.current_popup {
-            update_page(frame, chunks[1], app);
+        if let popup = app.current_popup {
+            match popup {
+                Popup::Update => update_page(frame, chunks[1], app),
+                Popup::Confirm => confirm_popup(frame, app),
+                _ => {}
+            }
         }
     }
 }

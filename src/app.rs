@@ -11,13 +11,17 @@ pub enum CurrentScreen {
     Show,
     Add,
     Filter,
-    Confirm,
-    Exit,
 }
 
+#[derive(Clone, Copy)]
 pub enum Popup {
     None,
     Update,
+    Confirm,
+}
+pub enum Confirmval {
+    Yes,
+    No,
 }
 
 pub enum Creds {
@@ -78,6 +82,9 @@ pub struct App {
     pub credentials: Vec<Credential>,
     pub scroll_state: ScrollbarState,
     pub current_popup: Popup,
+    pub confirm_state: Confirmval,
+    pub prev_popup: Popup,
+    pub can_exit: bool,
 }
 
 impl App {
@@ -94,9 +101,12 @@ impl App {
             is_login: false,
             current_screen: CurrentScreen::Login,
             current_popup: Popup::None,
+            prev_popup: Popup::None,
             current_param: None,
             credentials: Vec::new(),
             scroll_state: ScrollbarState::new(0),
+            confirm_state: Confirmval::Yes,
+            can_exit: false,
         }
     }
     pub fn save_credentials(&mut self) {
@@ -107,12 +117,7 @@ impl App {
             username: self.user_input.clone(),
             gmail: self.gmail_input.clone(),
         });
-        self.site_input = String::new();
-        self.url_input = String::new();
-        self.pass_input = String::new();
-        self.user_input = String::new();
-        self.gmail_input = String::new();
-        self.masked_pass = String::new();
+        self.clear_input();
     }
 
     pub fn update_credentials(&mut self) {
@@ -122,14 +127,17 @@ impl App {
             self.credentials[index].gmail = self.gmail_input.clone();
             self.credentials[index].username = self.url_input.clone();
             self.credentials[index].password = self.pass_input.clone();
-
-            self.site_input = String::new();
-            self.url_input = String::new();
-            self.pass_input = String::new();
-            self.user_input = String::new();
-            self.gmail_input = String::new();
-            self.masked_pass = String::new();
+            self.clear_input();
         }
+    }
+    fn clear_input(&mut self) {
+        self.entry_key = String::new();
+        self.site_input = String::new();
+        self.url_input = String::new();
+        self.gmail_input = String::new();
+        self.user_input = String::new();
+        self.pass_input = String::new();
+        self.masked_pass = String::new();
     }
 
     pub fn filter_operation() {

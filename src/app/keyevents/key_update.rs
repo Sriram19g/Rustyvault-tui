@@ -23,9 +23,8 @@ impl super::super::App {
                             self.current_param = Some(Creds::Password);
                         }
                         Creds::Password => {
-                            self.update_credentials();
-                            self.current_popup = Popup::None;
-                            self.current_screen = CurrentScreen::Show;
+                            self.prev_popup = self.current_popup;
+                            self.current_popup = Popup::Confirm;
                         }
                     }
                 }

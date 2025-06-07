@@ -1,5 +1,7 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
+use crate::app::Popup;
+
 use super::super::{Creds, CurrentScreen};
 
 impl super::super::App {
@@ -18,18 +20,10 @@ impl super::super::App {
                 self.current_screen = CurrentScreen::Show;
             }
             KeyCode::Char('q') => {
-                self.current_screen = CurrentScreen::Exit;
+                self.prev_popup = self.current_popup;
+                self.current_popup = Popup::Confirm;
             }
             _ => {}
         }
-    }
-    fn clear_input(&mut self) {
-        self.entry_key = String::new();
-        self.site_input = String::new();
-        self.url_input = String::new();
-        self.gmail_input = String::new();
-        self.user_input = String::new();
-        self.pass_input = String::new();
-        self.masked_pass = String::new();
     }
 }

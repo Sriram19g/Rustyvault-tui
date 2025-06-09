@@ -1,7 +1,15 @@
+use diesel::SqliteConnection;
 use ratatui::widgets::{ScrollbarState, TableState};
 
 mod keyevents;
 mod showtable;
+use crate::database::{
+    self,
+    add::add_entry,
+    model::{Entry, NewEntry, UpdateEntry},
+    retrive::get_filtered_entries,
+    update::update_entry,
+};
 
 const ITEM_HEIGHT: usize = 10;
 
@@ -10,7 +18,6 @@ pub enum CurrentScreen {
     Main,
     Show,
     Add,
-    Filter,
 }
 
 #[derive(Clone, Copy)]
@@ -18,6 +25,7 @@ pub enum Popup {
     None,
     Update,
     Confirm,
+    Filter,
 }
 pub enum Confirmval {
     Yes,
@@ -32,41 +40,6 @@ pub enum Creds {
     Password,
 }
 
-pub struct Credential {
-    pub site_name: String,
-    pub url: String,
-    pub password: String,
-    pub username: String,
-    pub gmail: String,
-}
-
-impl Credential {
-    pub const fn ref_array(&self) -> [&String; 5] {
-        [
-            &self.site_name,
-            &self.url,
-            &self.gmail,
-            &self.username,
-            &self.password,
-        ]
-    }
-    pub fn site_name(&self) -> &str {
-        &self.site_name
-    }
-    pub fn url(&self) -> &str {
-        &self.url
-    }
-    pub fn gmail(&self) -> &str {
-        &self.password
-    }
-    pub fn username(&self) -> &str {
-        &self.username
-    }
-    pub fn password(&self) -> &str {
-        &self.password
-    }
-}
-
 pub struct App {
     pub state: TableState,
     pub entry_key: String,
@@ -79,12 +52,12 @@ pub struct App {
     pub is_login: bool,
     pub current_screen: CurrentScreen,
     pub current_param: Option<Creds>,
-    pub credentials: Vec<Credential>,
+    pub credentials: Vec<Entry>,
     pub scroll_state: ScrollbarState,
     pub current_popup: Popup,
     pub confirm_state: Confirmval,
     pub prev_popup: Popup,
-    pub can_exit: bool,
+    pub conn: SqliteConnection,
 }
 
 impl App {
@@ -106,27 +79,43 @@ impl App {
             credentials: Vec::new(),
             scroll_state: ScrollbarState::new(0),
             confirm_state: Confirmval::Yes,
-            can_exit: false,
+            conn: database::db::establish_connection(),
         }
     }
     pub fn save_credentials(&mut self) {
-        self.credentials.push(Credential {
-            site_name: self.site_input.clone(),
-            url: self.url_input.clone(),
-            password: self.pass_input.clone(),
-            username: self.user_input.clone(),
-            gmail: self.gmail_input.clone(),
-        });
+        let newentry = NewEntry {
+            sitename: &self.site_input,
+            siteurl: &self.url_input,
+            email: Some(&self.gmail_input),
+            username: Some(&self.user_input),
+            password: &self.pass_input,
+        };
+
+        let _ = add_entry(&mut self.conn, newentry);
+
         self.clear_input();
     }
 
     pub fn update_credentials(&mut self) {
         if let Some(index) = self.state.selected() {
-            self.credentials[index].site_name = self.site_input.clone();
-            self.credentials[index].url = self.url_input.clone();
-            self.credentials[index].gmail = self.gmail_input.clone();
-            self.credentials[index].username = self.url_input.clone();
+            self.credentials[index].sitename = self.site_input.clone();
+            self.credentials[index].siteurl = self.url_input.clone();
+            self.credentials[index].email = self.gmail_input.clone();
+            self.credentials[index].username = self.user_input.clone();
             self.credentials[index].password = self.pass_input.clone();
+
+            let id = self.credentials[index].id;
+
+            let data = UpdateEntry {
+                sitename: Some(&self.site_input),
+                siteurl: Some(&self.url_input),
+                email: Some(&self.gmail_input),
+                username: Some(&self.user_input),
+                password: Some(&self.pass_input),
+            };
+
+            let _ = update_entry(&mut self.conn, id, data);
+
             self.clear_input();
         }
     }
@@ -140,9 +129,21 @@ impl App {
         self.masked_pass = String::new();
     }
 
-    pub fn filter_operation() {
-        todo!()
+    fn filter_operation(&mut self) {
+        let filter_creds = get_filtered_entries(
+            &mut self.conn,
+            self.site_input.clone(),
+            self.url_input.clone(),
+            self.gmail_input.clone(),
+            self.user_input.clone(),
+        );
+        self.credentials = match filter_creds {
+            Ok(data) => data,
+            Err(_) => Vec::new(),
+        };
+        self.clear_input();
     }
+
     pub fn check_password(&mut self) {
         let pass = String::from("abcd1234");
         if pass.trim() == self.entry_key.trim() {

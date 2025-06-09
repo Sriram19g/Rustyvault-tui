@@ -22,13 +22,11 @@ pub fn footer_layout(frame: &mut Frame, area: Rect, app: &App) {
                 Popup::None => Span::styled("Display Screen", Style::default().fg(Color::Yellow)),
                 Popup::Update => Span::styled("Update Screen", Style::default().fg(Color::Gray)),
                 Popup::Confirm => Span::styled("Confirm Screen", Style::default().fg(Color::Gray)),
+                Popup::Filter => Span::styled("Confirm Screen", Style::default().fg(Color::Gray)),
             },
             // CurrentScreen::Update => {
             //     Span::styled("Update Screen", Style::default().fg(Color::Gray))
             // }
-            CurrentScreen::Filter => {
-                Span::styled("Filter Screen", Style::default().fg(Color::DarkGray))
-            }
             CurrentScreen::Login => Span::styled("Login Screen", Style::default().fg(Color::Green)),
         }
         .to_owned(),
@@ -62,11 +60,12 @@ pub fn footer_layout(frame: &mut Frame, area: Rect, app: &App) {
                     "(q) to quit / (e) to make new pair",
                     Style::default().fg(Color::Red),
                 ),
+                Popup::Filter => Span::styled(
+                    "(q) to quit / (e) to make new pair",
+                    Style::default().fg(Color::Red),
+                ),
             },
-            CurrentScreen::Filter => Span::styled(
-                "(ESC) to cancel/(Tab) to switch boxes/enter to complete",
-                Style::default().fg(Color::Red),
-            ),
+
             CurrentScreen::Login => Span::styled(
                 "(ESC) to cancel/(Tab) to switch boxes/enter to complete",
                 Style::default().fg(Color::Red),

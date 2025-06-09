@@ -1,6 +1,7 @@
 use std::{error::Error, io};
 
 use app::{App, CurrentScreen};
+
 use ratatui::{
     Terminal,
     crossterm::{
@@ -12,8 +13,8 @@ use ratatui::{
 };
 
 use crate::app::Popup;
-
 mod app;
+mod database;
 mod tui;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -71,9 +72,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         return Ok(false);
                     }
                 }
-                CurrentScreen::Filter if key.kind == KeyEventKind::Press => {
-                    app.filter_key_handler(key)
-                }
                 CurrentScreen::Show => {
                     match app.current_popup {
                         Popup::None => app.show_key_handler(key),
@@ -81,6 +79,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         Popup::Confirm => {
                             let _ = app.confirm_key_handler(key);
                         }
+                        Popup::Filter => app.filter_key_handler(key),
                     };
                 }
                 _ => {}

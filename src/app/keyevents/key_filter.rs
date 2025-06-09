@@ -1,3 +1,5 @@
+use crate::app::Popup;
+
 use super::super::{Creds, CurrentScreen};
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
@@ -17,8 +19,12 @@ impl super::super::App {
                             self.current_param = Some(Creds::Username);
                         }
                         Creds::Username => {
-                            self.save_credentials();
-                            self.current_screen = CurrentScreen::Main;
+                            self.filter_operation();
+                            self.prev_popup = self.current_popup;
+                            self.current_popup = Popup::None;
+                            self.current_screen = CurrentScreen::Show;
+                            self.clear_input();
+                            self.current_param = Some(Creds::Sitename);
                         }
                         _ => {}
                     }
@@ -47,8 +53,12 @@ impl super::super::App {
                 self.toggle_filter_param();
             }
             KeyCode::Esc => {
-                self.current_screen = CurrentScreen::Main;
+                self.current_screen = CurrentScreen::Show;
+                self.prev_popup = self.current_popup;
+                self.current_popup = Popup::None;
+                self.clear_input();
                 self.current_param = None;
+                self.current_param = Some(Creds::Sitename);
             }
             KeyCode::Char(value) => {
                 if let Some(adding) = &self.current_param {

@@ -1,4 +1,5 @@
 use crate::app::ITEM_HEIGHT;
+use crate::database::delete::delete_entry;
 
 impl super::super::App {
     pub fn next_row(&mut self) {
@@ -34,6 +35,8 @@ impl super::super::App {
     pub fn delete_entry(&mut self) {
         if let Some(index) = self.state.selected() {
             if index < self.credentials.len() {
+                let id = self.credentials[index].id;
+                let _ = delete_entry(&mut self.conn, id);
                 self.credentials.remove(index);
 
                 let new_selected = if index == self.credentials.len() {
@@ -51,9 +54,9 @@ impl super::super::App {
     }
     pub fn load_values(&mut self) {
         if let Some(index) = self.state.selected() {
-            self.site_input = self.credentials[index].site_name.clone();
-            self.url_input = self.credentials[index].url.clone();
-            self.gmail_input = self.credentials[index].gmail.clone();
+            self.site_input = self.credentials[index].sitename.clone();
+            self.url_input = self.credentials[index].siteurl.clone();
+            self.gmail_input = self.credentials[index].email.clone();
             self.user_input = self.credentials[index].username.clone();
             self.pass_input = self.credentials[index].password.clone();
             self.masked_pass = "*".repeat(self.credentials[index].password.len());

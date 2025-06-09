@@ -1,1 +1,5 @@
 /target
+rustyvault.db
+/.env
+diesel.toml
+

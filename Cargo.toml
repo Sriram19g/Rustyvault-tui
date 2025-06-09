@@ -8,3 +8,6 @@ author = "cyberhunter"
 itertools = "0.14.0"
 ratatui = "0.29.0"
 unicode-width = "0.2.0"
+diesel = { version = "2.1.0", features = ["sqlite"] }
+dotenvy = "0.15"
+

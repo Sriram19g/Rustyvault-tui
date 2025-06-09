@@ -13,6 +13,11 @@ impl super::super::App {
                 self.prev_popup = self.current_popup;
                 self.current_popup = Popup::Confirm;
             }
+            KeyCode::Char('f') => {
+                self.current_param = Some(Creds::Sitename);
+                self.prev_popup = self.current_popup;
+                self.current_popup = Popup::Filter;
+            }
             KeyCode::Char('u') => {
                 self.current_param = Some(Creds::Sitename);
                 self.load_values();

@@ -7,8 +7,7 @@ use ratatui::{
 };
 use unicode_width::UnicodeWidthStr;
 
-use crate::app::App;
-use crate::app::Credential;
+use crate::{app::App, database::model::Entry};
 
 pub fn show_page(frame: &mut Frame, area: Rect, app: &mut App) {
     render_table(frame, area, app);
@@ -86,38 +85,38 @@ fn render_scrollbar(frame: &mut Frame, area: Rect, app: &mut App) {
     );
 }
 
-fn constraint_len_calculator(items: &[Credential]) -> (u16, u16, u16, u16, u16) {
+fn constraint_len_calculator(items: &[Entry]) -> (u16, u16, u16, u16, u16) {
     let sitename_len = items
         .iter()
-        .map(Credential::site_name)
+        .map(Entry::site_name)
         .map(UnicodeWidthStr::width)
         .max()
         .unwrap_or(0);
 
     let siteurl_len = items
         .iter()
-        .map(Credential::url)
+        .map(Entry::url)
         .map(UnicodeWidthStr::width)
         .max()
         .unwrap_or(0);
 
     let gmail_len = items
         .iter()
-        .map(Credential::gmail)
+        .map(Entry::gmail)
         .map(UnicodeWidthStr::width)
         .max()
         .unwrap_or(0);
 
     let user_len = items
         .iter()
-        .map(Credential::username)
+        .map(Entry::username)
         .map(UnicodeWidthStr::width)
         .max()
         .unwrap_or(0);
 
     let pass_len = items
         .iter()
-        .map(Credential::password)
+        .map(Entry::password)
         .map(UnicodeWidthStr::width)
         .max()
         .unwrap_or(0);

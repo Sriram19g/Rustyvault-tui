@@ -11,10 +11,11 @@ use show_tui::show_page;
 
 use crate::{
     app::{App, CurrentScreen, Popup},
-    tui::{confirm_tui::confirm_popup, update_tui::update_page},
+    tui::{confirm_tui::confirm_popup, filter_tui::filter_pop_up, update_tui::update_page},
 };
 mod add_tui;
 mod confirm_tui;
+mod filter_tui;
 mod footer;
 mod header;
 mod login_popup;
@@ -57,6 +58,7 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
             match popup {
                 Popup::Update => update_page(frame, chunks[1], app),
                 Popup::Confirm => confirm_popup(frame, app),
+                Popup::Filter => filter_pop_up(frame, app, chunks[1]),
                 _ => {}
             }
         }

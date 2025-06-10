@@ -3,12 +3,18 @@ use ratatui::widgets::{ScrollbarState, TableState};
 
 mod keyevents;
 mod showtable;
-use crate::database::{
-    self,
-    add::add_entry,
-    model::{Entry, NewEntry, UpdateEntry},
-    retrive::get_filtered_entries,
-    update::update_entry,
+use crate::{
+    database::{
+        self,
+        add::add_entry,
+        model::{Entry, NewEntry, UpdateEntry},
+        retrive::{get_filtered_entries, get_secret},
+        update::update_entry,
+    },
+    security::{
+        hashing::{generate_key_derivation, verify_password},
+        xchacha::encrypt,
+    },
 };
 
 const ITEM_HEIGHT: usize = 10;
@@ -58,6 +64,7 @@ pub struct App {
     pub confirm_state: Confirmval,
     pub prev_popup: Popup,
     pub conn: SqliteConnection,
+    pub key: [u8; 32],
 }
 
 impl App {
@@ -80,6 +87,7 @@ impl App {
             scroll_state: ScrollbarState::new(0),
             confirm_state: Confirmval::Yes,
             conn: database::db::establish_connection(),
+            key: [0u8; 32],
         }
     }
     pub fn save_credentials(&mut self) {
@@ -88,7 +96,7 @@ impl App {
             siteurl: &self.url_input,
             email: Some(&self.gmail_input),
             username: Some(&self.user_input),
-            password: &self.pass_input,
+            password: &encrypt(&self.pass_input, &self.key),
         };
 
         let _ = add_entry(&mut self.conn, newentry);
@@ -102,7 +110,7 @@ impl App {
             self.credentials[index].siteurl = self.url_input.clone();
             self.credentials[index].email = self.gmail_input.clone();
             self.credentials[index].username = self.user_input.clone();
-            self.credentials[index].password = self.pass_input.clone();
+            self.credentials[index].password = "*****".to_owned();
 
             let id = self.credentials[index].id;
 
@@ -111,7 +119,13 @@ impl App {
                 siteurl: Some(&self.url_input),
                 email: Some(&self.gmail_input),
                 username: Some(&self.user_input),
-                password: Some(&self.pass_input),
+                password: match self.pass_input.as_ref() {
+                    "*****" => None,
+                    val => {
+                        self.pass_input = encrypt(val, &self.key);
+                        Some(&self.pass_input)
+                    }
+                },
             };
 
             let _ = update_entry(&mut self.conn, id, data);
@@ -145,11 +159,21 @@ impl App {
     }
 
     pub fn check_password(&mut self) {
-        let pass = String::from("abcd1234");
-        if pass.trim() == self.entry_key.trim() {
-            self.is_login = true;
-        } else {
-            self.is_login = false;
+        match get_secret(&mut self.conn) {
+            Ok(Some(secret)) => {
+                let mk_hash = secret.masterkey_hash;
+                let ds = secret.device_secret;
+                self.is_login = verify_password(&mk_hash, &ds, &self.entry_key.trim().to_owned());
+                self.key = generate_key_derivation(&self.entry_key.to_owned(), &ds);
+            }
+            Ok(None) => {
+                // No secret found in DB
+                self.is_login = false;
+            }
+            Err(_) => {
+                // DB error occurred
+                self.is_login = false;
+            }
         }
     }
     pub fn toggle_params(&mut self) {

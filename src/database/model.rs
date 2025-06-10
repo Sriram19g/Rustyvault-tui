@@ -13,6 +13,30 @@ pub struct Entry {
     pub password: String,
 }
 
+#[derive(Queryable, Selectable, Debug)]
+#[diesel(table_name = entries)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct EntryInfo {
+    pub id: i32,
+    pub sitename: String,
+    pub siteurl: String,
+    pub email: String,
+    pub username: String,
+}
+
+impl Into<Entry> for EntryInfo {
+    fn into(self) -> Entry {
+        Entry {
+            id: self.id,
+            sitename: self.sitename,
+            siteurl: self.siteurl,
+            email: self.email,
+            username: self.username,
+            password: String::from("*****"),
+        }
+    }
+}
+
 #[derive(Insertable)]
 #[diesel(table_name=entries)]
 pub struct NewEntry<'a> {

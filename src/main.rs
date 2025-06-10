@@ -15,6 +15,7 @@ use ratatui::{
 use crate::app::Popup;
 mod app;
 mod database;
+mod security;
 mod tui;
 
 fn main() -> Result<(), Box<dyn Error>> {

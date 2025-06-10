@@ -8,7 +8,7 @@ impl super::super::App {
             KeyCode::Char('q') | KeyCode::Esc => self.current_screen = CurrentScreen::Main,
             KeyCode::Char('j') | KeyCode::Down => self.next_row(),
             KeyCode::Char('k') | KeyCode::Up => self.previous_row(),
-            KeyCode::Char('c') => {}
+            KeyCode::Char('c') => self.copy_password(),
             KeyCode::Char('d') => {
                 self.prev_popup = self.current_popup;
                 self.current_popup = Popup::Confirm;

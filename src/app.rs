@@ -6,18 +6,25 @@ mod showtable;
 use crate::{
     database::{
         self,
-        add::add_entry,
-        model::{Entry, NewEntry, UpdateEntry},
-        retrive::{get_filtered_entries, get_secret},
-        update::update_entry,
+        add::{add_entry, add_secret},
+        model::{Entry, NewEntry, NewSecret, UpdateEntry, UpdateSecret},
+        retrive::{get_all_passwords, get_filtered_entries, get_secret},
+        update::{update_entry, update_password, update_secret},
     },
     security::{
-        hashing::{generate_key_derivation, verify_password},
-        xchacha::encrypt,
+        generator::generate_device_secret,
+        hashing::{generate_hash, generate_key_derivation, verify_password},
+        xchacha::{decrypt, encrypt},
     },
 };
 
 const ITEM_HEIGHT: usize = 10;
+
+pub enum LoginPopup {
+    Login,
+    Reset,
+    New,
+}
 
 pub enum CurrentScreen {
     Login,
@@ -49,12 +56,14 @@ pub enum Creds {
 pub struct App {
     pub state: TableState,
     pub entry_key: String,
+    pub entry_key1: String,
     pub site_input: String,
     pub url_input: String,
     pub gmail_input: String,
     pub user_input: String,
     pub pass_input: String,
     pub masked_pass: String,
+    pub masked_pass1: String,
     pub is_login: bool,
     pub current_screen: CurrentScreen,
     pub current_param: Option<Creds>,
@@ -65,6 +74,8 @@ pub struct App {
     pub prev_popup: Popup,
     pub conn: SqliteConnection,
     pub key: [u8; 32],
+    pub login_state: LoginPopup,
+    pub attempt: u8,
 }
 
 impl App {
@@ -72,12 +83,14 @@ impl App {
         App {
             state: TableState::default().with_selected(0),
             entry_key: String::new(),
+            entry_key1: String::new(),
             site_input: String::new(),
             url_input: String::new(),
             gmail_input: String::new(),
             user_input: String::new(),
             pass_input: String::new(),
             masked_pass: String::new(),
+            masked_pass1: String::new(),
             is_login: false,
             current_screen: CurrentScreen::Login,
             current_popup: Popup::None,
@@ -88,9 +101,11 @@ impl App {
             confirm_state: Confirmval::Yes,
             conn: database::db::establish_connection(),
             key: [0u8; 32],
+            login_state: LoginPopup::Login,
+            attempt: 3,
         }
     }
-    pub fn save_credentials(&mut self) {
+    fn save_credentials(&mut self) {
         let newentry = NewEntry {
             sitename: &self.site_input,
             siteurl: &self.url_input,
@@ -104,7 +119,7 @@ impl App {
         self.clear_input();
     }
 
-    pub fn update_credentials(&mut self) {
+    fn update_credentials(&mut self) {
         if let Some(index) = self.state.selected() {
             self.credentials[index].sitename = self.site_input.clone();
             self.credentials[index].siteurl = self.url_input.clone();
@@ -158,13 +173,15 @@ impl App {
         self.clear_input();
     }
 
-    pub fn check_password(&mut self) {
+    fn check_password(&mut self) {
         match get_secret(&mut self.conn) {
             Ok(Some(secret)) => {
                 let mk_hash = secret.masterkey_hash;
                 let ds = secret.device_secret;
                 self.is_login = verify_password(&mk_hash, &ds, &self.entry_key.trim().to_owned());
                 self.key = generate_key_derivation(&self.entry_key.to_owned(), &ds);
+                self.masked_pass = String::new();
+                self.entry_key = String::new();
             }
             Ok(None) => {
                 // No secret found in DB
@@ -176,7 +193,7 @@ impl App {
             }
         }
     }
-    pub fn toggle_params(&mut self) {
+    fn toggle_params(&mut self) {
         if let Some(current_param) = &self.current_param {
             match current_param {
                 Creds::Sitename => self.current_param = Some(Creds::Siteurl),
@@ -189,7 +206,7 @@ impl App {
             self.current_param = Some(Creds::Sitename);
         }
     }
-    pub fn toggle_filter_param(&mut self) {
+    fn toggle_filter_param(&mut self) {
         if let Some(current_param) = &self.current_param {
             match current_param {
                 Creds::Sitename => self.current_param = Some(Creds::Siteurl),
@@ -201,5 +218,37 @@ impl App {
         } else {
             self.current_param = Some(Creds::Sitename);
         }
+    }
+    fn add_masterkey(&mut self) {
+        let ds = generate_device_secret();
+        let data = NewSecret {
+            masterkey_hash: &generate_hash(&self.entry_key, &ds),
+            device_secret: &ds,
+        };
+        let _ = add_secret(&mut self.conn, data);
+        self.entry_key = String::new();
+        self.masked_pass = String::new();
+    }
+
+    fn update_all_passwords(&mut self) {
+        let ds = generate_device_secret();
+        let mk_hash = generate_hash(&self.entry_key, &ds);
+        let data = UpdateSecret {
+            masterkey_hash: Some(&mk_hash),
+            device_secret: Some(&ds),
+        };
+        let _ = update_secret(&mut self.conn, data);
+        let new_key_derivation = generate_key_derivation(&self.entry_key, &ds);
+        let data = get_all_passwords(&mut self.conn).unwrap();
+
+        for (entry_id, pass) in data {
+            let plain_text = decrypt(&pass, &self.key);
+            let cipher_text = encrypt(&plain_text, &new_key_derivation);
+            let _ = update_password(&mut self.conn, entry_id, &cipher_text);
+        }
+        self.entry_key = String::new();
+        self.masked_pass = String::new();
+        self.entry_key1 = String::new();
+        self.masked_pass1 = String::new();
     }
 }

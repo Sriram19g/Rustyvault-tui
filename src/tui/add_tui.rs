@@ -11,7 +11,7 @@ use ratatui::{
 use crate::app::{App, Creds};
 
 pub fn add_page(frame: &mut Frame, area: Rect, app: &App) {
-    let block1 = get_area(area);
+    let block1 = get_area(frame, area);
 
     header(frame, block1[0]);
     body(frame, block1[1], app);
@@ -158,7 +158,7 @@ fn body(frame: &mut Frame, area: Rect, app: &App) {
     frame.render_widget(&pass_in, pass_block[1]);
 }
 
-fn get_area(area: Rect) -> Rc<[Rect]> {
+fn get_area(frame: &mut Frame, area: Rect) -> Rc<[Rect]> {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -176,6 +176,11 @@ fn get_area(area: Rect) -> Rc<[Rect]> {
             Constraint::Percentage(30),
         ])
         .split(chunks[1]);
+
+    let popup_block = Block::default()
+        .borders(Borders::NONE)
+        .style(Style::default().bg(Color::DarkGray));
+    frame.render_widget(popup_block, rect_area[1]);
 
     Layout::default()
         .direction(Direction::Vertical)

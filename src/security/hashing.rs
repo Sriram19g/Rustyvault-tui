@@ -19,3 +19,13 @@ pub fn generate_key_derivation(pass: &String, ds: &String) -> [u8; 32] {
         .unwrap();
     output
 }
+
+pub fn generate_hash(pass: &String, ds: &String) -> String {
+    let mk = pass.to_owned() + ds;
+    let mk = mk.into_bytes();
+
+    let salt = SaltString::generate(&mut OsRng);
+
+    let argon2 = Argon2::default();
+    argon2.hash_password(&mk, &salt).unwrap().to_string()
+}

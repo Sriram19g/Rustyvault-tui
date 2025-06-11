@@ -8,7 +8,7 @@ use ratatui::{
 
 use crate::app::{App, Confirmval};
 
-pub fn login_pop_up(frame: &mut Frame, app: &App) {
+pub fn signup_popup(frame: &mut Frame, app: &App) {
     let popup_block = Block::default()
         .borders(Borders::ALL)
         .style(Style::default().bg(Color::DarkGray));
@@ -21,38 +21,44 @@ pub fn login_pop_up(frame: &mut Frame, app: &App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3),
+            Constraint::Length(1),
+            Constraint::Length(3),
+            Constraint::Length(1),
             Constraint::Length(3),
             Constraint::Min(1),
-            Constraint::Length(3),
             Constraint::Length(1),
         ])
         .split(area);
     header(frame, chunks[0]);
-    let box1 = input_box(chunks[1]);
-
-    let mut block1 = Block::default().title("Password").borders(Borders::ALL);
-
+    let box1 = input_box(chunks[2]);
+    let box2 = input_box(chunks[4]);
+    let mut block1 = Block::default().title("New Password").borders(Borders::ALL);
+    let mut block2 = Block::default()
+        .title("Confirm Password")
+        .borders(Borders::ALL);
     let active_style = Style::default().bg(Color::Black).fg(Color::White);
 
-    block1 = block1.style(active_style);
+    match app.confirm_state {
+        Confirmval::Yes => block1 = block1.style(active_style),
+        Confirmval::No => block2 = block2.style(active_style),
+    };
 
     let block1_text = Paragraph::new(app.masked_pass.clone())
         .block(block1)
         .alignment(Alignment::Center);
+    let block2_text = Paragraph::new(app.masked_pass1.clone())
+        .block(block2)
+        .alignment(Alignment::Center);
 
     frame.render_widget(block1_text, box1);
+    frame.render_widget(block2_text, box2);
 
-    let text = input_box(chunks[2]);
-
-    let text_content = Span::styled(
-        format!("Attempt : {}", app.attempt),
-        Style::default().fg(Color::Red),
-    );
-
-    let content_paragraph = Paragraph::new(vec!["".into(), text_content.into()]);
-
-    frame.render_widget(content_paragraph, text);
-    buttons(frame, chunks[3], app);
+    let mut text_content = Span::default();
+    if app.entry_key != app.entry_key1 {
+        text_content = Span::styled("  Passwords do not match", Style::default().fg(Color::Red));
+    }
+    let content_paragraph = Paragraph::new(text_content);
+    frame.render_widget(content_paragraph, chunks[5]);
 }
 
 fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
@@ -76,7 +82,7 @@ fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
 }
 fn header(frame: &mut Frame, area: Rect) {
     let add_block = Block::default().borders(Borders::NONE);
-    let heading = Paragraph::new(vec!["".into(), "Login".into()])
+    let heading = Paragraph::new(vec!["".into(), "Sign Up".into()])
         .style(
             Style::default()
                 .fg(Color::White)
@@ -97,36 +103,4 @@ fn input_box(area: Rect) -> Rect {
             Constraint::Percentage(10),
         ])
         .split(area)[1]
-}
-fn buttons(frame: &mut Frame, area: Rect, app: &App) {
-    let chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(20),
-            Constraint::Percentage(20),
-            Constraint::Percentage(20),
-            Constraint::Percentage(20),
-            Constraint::Percentage(20),
-        ])
-        .split(area);
-    let mut ok_block = Block::default().borders(Borders::ALL);
-    let mut reset_block = Block::default().borders(Borders::ALL);
-
-    let active_style = Style::default().bg(Color::Black).fg(Color::White);
-
-    match app.confirm_state {
-        Confirmval::Yes => ok_block = ok_block.style(active_style),
-        Confirmval::No => reset_block = reset_block.style(active_style),
-    }
-
-    let ok = Paragraph::new("Enter")
-        .alignment(Alignment::Center)
-        .block(ok_block);
-
-    let reset = Paragraph::new("Reset")
-        .alignment(Alignment::Center)
-        .block(reset_block);
-
-    frame.render_widget(ok, chunks[3]);
-    frame.render_widget(reset, chunks[1]);
 }

@@ -49,11 +49,6 @@ fn content_block(frame: &mut Frame, area: Rect) {
             .blue()
             .into(),
         "".into(),
-        Line::from(" • Filter the entries for retrival             [f]")
-            .alignment(Alignment::Center)
-            .blue()
-            .into(),
-        "".into(),
         Line::from(" • Show all entries in the vault               [s]")
             .alignment(Alignment::Center)
             .blue()

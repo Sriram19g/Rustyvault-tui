@@ -12,7 +12,10 @@ use ratatui::{
     prelude::{Backend, CrosstermBackend},
 };
 
-use crate::app::Popup;
+use crate::{
+    app::{LoginPopup, Popup},
+    database::{delete::delete_all_entries, retrive::get_secret_len},
+};
 mod app;
 mod database;
 mod security;
@@ -68,11 +71,30 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     };
                 }
 
-                CurrentScreen::Login if key.kind == KeyEventKind::Press => {
-                    if !app.login_key_handler(key) {
-                        return Ok(false);
+                CurrentScreen::Login if key.kind == KeyEventKind::Press => match app.login_state {
+                    LoginPopup::Login => {
+                        let siz = match get_secret_len(&mut app.conn) {
+                            Ok(val) => val,
+                            Err(_) => 0,
+                        };
+                        if siz > 0 {
+                            if !app.login_key_handler(key) {
+                                return Ok(false);
+                            }
+                        } else {
+                            app.login_state = LoginPopup::New;
+                        }
                     }
-                }
+                    LoginPopup::New => {
+                        let _ = delete_all_entries(&mut app.conn);
+                        if !app.new_key_handler(key) {
+                            return Ok(false);
+                        }
+                    }
+                    LoginPopup::Reset => {
+                        app.reset_key_handler(key);
+                    }
+                },
                 CurrentScreen::Show => {
                     match app.current_popup {
                         Popup::None => app.show_key_handler(key),

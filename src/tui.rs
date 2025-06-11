@@ -10,8 +10,11 @@ use ratatui::{
 use show_tui::show_page;
 
 use crate::{
-    app::{App, CurrentScreen, Popup},
-    tui::{confirm_tui::confirm_popup, filter_tui::filter_pop_up, update_tui::update_page},
+    app::{App, CurrentScreen, LoginPopup, Popup},
+    tui::{
+        confirm_tui::confirm_popup, filter_tui::filter_pop_up, reset_popup::reset_popup,
+        signup_popup::signup_popup, update_tui::update_page,
+    },
 };
 mod add_tui;
 mod confirm_tui;
@@ -20,12 +23,18 @@ mod footer;
 mod header;
 mod login_popup;
 mod main_page;
+mod reset_popup;
 mod show_tui;
+mod signup_popup;
 mod update_tui;
 
 pub fn ui(frame: &mut Frame, app: &mut App) {
     if let CurrentScreen::Login = app.current_screen {
-        login_pop_up(frame, app);
+        match app.login_state {
+            LoginPopup::Login => login_pop_up(frame, app),
+            LoginPopup::New => signup_popup(frame, app),
+            LoginPopup::Reset => reset_popup(frame, app),
+        }
     }
 
     let chunks = Layout::default()
@@ -54,13 +63,12 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     }
     if let CurrentScreen::Show = app.current_screen {
         show_page(frame, chunks[1], app);
-        if let popup = app.current_popup {
-            match popup {
-                Popup::Update => update_page(frame, chunks[1], app),
-                Popup::Confirm => confirm_popup(frame, app),
-                Popup::Filter => filter_pop_up(frame, app, chunks[1]),
-                _ => {}
-            }
+
+        match app.current_popup {
+            Popup::Update => update_page(frame, chunks[1], app),
+            Popup::Confirm => confirm_popup(frame, app),
+            Popup::Filter => filter_pop_up(frame, app, chunks[1]),
+            _ => {}
         }
     }
 }

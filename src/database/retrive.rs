@@ -28,13 +28,13 @@ pub fn get_password(conn: &mut SqliteConnection, entry_id: i32) -> QueryResult<O
         .optional()
 }
 
-pub fn get_filtered_entries(
+pub fn get_filtered_info(
     conn: &mut SqliteConnection,
     site: String,
     url: String,
     gmail: String,
     user: String,
-) -> QueryResult<Vec<Entry>> {
+) -> QueryResult<Vec<EntryInfo>> {
     let mut query = entries.into_boxed();
     if !site.is_empty() {
         query = query.filter(sitename.like(format!("%{}%", site)));
@@ -51,5 +51,24 @@ pub fn get_filtered_entries(
     if !user.is_empty() {
         query = query.filter(username.like(format!("%{}%", user)));
     }
-    query.load::<Entry>(conn)
+    query.select(EntryInfo::as_select()).load::<EntryInfo>(conn)
+}
+
+pub fn get_filtered_entries(
+    conn: &mut SqliteConnection,
+    site: String,
+    url: String,
+    gmail: String,
+    user: String,
+) -> QueryResult<Vec<Entry>> {
+    let res = get_filtered_info(conn, site, url, gmail, user)?;
+    Ok(res.into_iter().map(Into::into).collect::<Vec<_>>())
+}
+
+pub fn get_secret_len(conn: &mut SqliteConnection) -> QueryResult<i64> {
+    secrets.count().get_result(conn)
+}
+
+pub fn get_all_passwords(conn: &mut SqliteConnection) -> QueryResult<Vec<(i32, String)>> {
+    entries.select((id, password)).load::<(i32, String)>(conn)
 }

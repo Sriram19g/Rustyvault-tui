@@ -52,11 +52,11 @@ fn render_table(frame: &mut Frame, area: Rect, app: &mut App) {
     let t = Table::new(
         rows,
         [
-            Constraint::Length(longest_item_lens.0 + 1),
+            Constraint::Min(longest_item_lens.0 + 1),
             Constraint::Min(longest_item_lens.1 + 1),
             Constraint::Min(longest_item_lens.2 + 1),
             Constraint::Min(longest_item_lens.3 + 1),
-            Constraint::Min(longest_item_lens.4),
+            Constraint::Length(12),
         ],
     )
     .header(header)

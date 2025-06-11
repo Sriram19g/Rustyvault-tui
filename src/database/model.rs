@@ -69,6 +69,13 @@ pub struct UpdateEntry<'a> {
     pub password: Option<&'a str>,
 }
 
+#[derive(AsChangeset)]
+#[diesel(table_name = secrets)]
+pub struct UpdateSecret<'a> {
+    pub masterkey_hash: Option<&'a str>,
+    pub device_secret: Option<&'a str>,
+}
+
 impl Entry {
     pub fn ref_array(&self) -> [&str; 5] {
         [
